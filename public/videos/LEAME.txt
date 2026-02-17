@@ -1,0 +1,4 @@
+Coloque aquí el video del hero:
+  - drone.mp4
+
+El video se reproduce en la portada de la landing.

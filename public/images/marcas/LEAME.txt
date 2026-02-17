@@ -1,0 +1,8 @@
+Coloque aquí los logos de las marcas ancla (recomendado: PNG o WebP, fondo transparente):
+
+  - cugat.png      (Supermercado Cugat)
+  - kfc.png        (KFC)
+  - papa-johns.png (Papa John's)
+  - cruz-verde.png (Cruz Verde)
+
+Tamaño sugerido: aprox. 200px de ancho. Si no hay imagen, se mostrará el nombre de la marca.
