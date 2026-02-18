@@ -22,6 +22,8 @@ git branch -M main
 git push -u origin main
 ```
 
+**Importante:** siempre es `git branch` (con **git** delante), no solo `branch`.
+
 Si GitHub te pide usuario/contraseña, usa un **Personal Access Token** como contraseña (Settings → Developer settings → Personal access tokens).
 
 ---

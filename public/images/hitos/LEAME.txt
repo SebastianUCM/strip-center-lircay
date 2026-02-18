@@ -1,0 +1,11 @@
+Logos de hitos para el mapa (Ubicación Estratégica).
+
+Puede reemplazar los .svg por imágenes reales con el mismo nombre:
+  utalca.svg / utalca.png    — Universidad de Talca
+  condominios.svg / .png     — Condominios
+  sapu.svg / .png            — SAPU y Colegios
+  ruta5.svg / .png           — Ruta 5 Sur
+  colegio.svg / .png         — Colegios zona oriente
+  edificios.svg / .png       — Edificios y zona edificada
+
+Tamaño sugerido: 48x48 px o 96x96 px. Fondo transparente recomendado.

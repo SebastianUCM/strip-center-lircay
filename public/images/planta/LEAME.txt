@@ -1,0 +1,23 @@
+Coloque aquí los archivos de la planta comercial para incorporarlos al landing:
+
+1) VISTA PLANTA (una de estas opciones):
+   - planta-vista.pdf     (vista planta del proyecto)
+   O bien exporte el PDF a imagen y use:
+   - planta-vista.png     (o .jpg) — recomendado para mejor integración
+
+2) PLANTA CON LOGOS DE LOCALES OCUPADOS:
+   - planta-con-logos.png (o .jpg)
+   Imagen de la planta con los logos de las marcas en cada local.
+
+Nombres exactos para que el código los encuentre:
+  - planta-vista.pdf  o  planta-vista.png / planta-vista.jpg
+  - planta-con-logos.png  o  planta-con-logos.jpg
+
+3) VISTA DESDE DRONE (opcional):
+   - drone-vista.png  o  drone-vista.jpg
+   Imagen aérea del strip. En el landing se muestran puntos naranjas
+   que identifican cada local disponible (07, 08, 10, 12, 13).
+   Puede ajustar la posición de los puntos en App.vue (array dronePuntos).
+
+Cuando los haya subido, avise y se integrarán a la sección
+"Planta Comercial y Áreas Comunes" con tooltips e interactividad.
