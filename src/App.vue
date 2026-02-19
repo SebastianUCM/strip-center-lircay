@@ -27,11 +27,9 @@ function animateValue(r, end) {
 }
 
 const localesDisponibles = [
-  { id: '07', m2: 85 },
-  { id: '08', m2: 120 },
-  { id: '10', m2: 95 },
-  { id: '12', m2: 110 },
-  { id: '13', m2: 75 },
+  { id: '08', m2: 22 },
+  { id: '10', m2: 45 },
+  { id: '11 y 12', m2: 88 },
 ]
 
 const marcas = [
@@ -139,11 +137,9 @@ const plantaConLogosSrc = '/images/planta/planta-con-logos.PNG'
 // Vista drone: imagen + puntos que identifican cada local (public/images/planta/)
 const droneVistaSrc = '/images/planta/drone-vista.jpeg'
 const dronePuntos = [
-  { localId: '07', m2: 85, left: '18%', top: '28%' },
-  { localId: '08', m2: 120, left: '26%', top: '28%' },
-  { localId: '10', m2: 95, left: '48%', top: '38%' },
-  { localId: '12', m2: 110, left: '58%', top: '38%' },
-  { localId: '13', m2: 75, left: '66%', top: '55%' },
+  { localId: '08', m2: 22, left: '50%', top: '34%' },
+  { localId: '10', m2: 45, left: '54%', top: '36%' },
+  { localId: '11 y 12', m2: 88, left: '61%', top: '39%' },
 ]
 const dronePuntoActivo = ref(null)
 
@@ -160,24 +156,32 @@ function onScroll() {
 }
 
 // Posiciones de cada local sobre planta-con-logos.PNG (% del ancho/alto de la imagen)
-// Ajustar left/top/width/height si las zonas no coinciden con los recuadros en la planta
-function getLocalZoneStyle(localId) {
+// Cada zona puede ser 1 rectángulo o varios (ej. 11 y 12 = L). 08 y 10 ya posicionados.
+function getLocalZoneParts(localId) {
   const zones = {
-    // Locales al norte de Cugat (primeros recuadros pequeños del edificio principal)
-    '07': { left: '7%', top: '18%', width: '7.5%', height: '16%' },
-    '08': { left: '15%', top: '18%', width: '7.5%', height: '16%' },
-    // Entre Cruz Verde y KFC (fila de locales con numeración)
-    '10': { left: '43%', top: '32%', width: '8%', height: '16%' },
-    '12': { left: '54%', top: '32%', width: '8%', height: '16%' },
-    '13': { left: '65%', top: '54%', width: '7.5%', height: '16%' },
+    '08': [{ left: '62.5%', top: '16%', width: '3%', height: '7%' }],
+    '10': [{ left: '67.5%', top: '10%', width: '3%', height: '13%' }],
+    '11 y 12': [
+      { left: '76%', top: '17%', width: '2%', height: '6%' },
+      { left: '78%', top: '10%', width: '3%', height: '13%' },
+    ],
   }
-  const z = zones[localId]
-  if (!z) return {}
+  const parts = zones[localId]
+  if (!parts || !parts.length) return []
+  return parts
+}
+// Estilo para un solo tooltip por local (centrado sobre la primera parte)
+function getLocalTooltipStyle(loc) {
+  const parts = getLocalZoneParts(loc.id)
+  if (!parts.length) return {}
+  const first = parts[0]
+  const leftNum = parseFloat(first.left)
+  const widthNum = parseFloat(first.width)
+  const centerLeft = (leftNum + widthNum / 2) + '%'
   return {
-    left: z.left,
-    top: z.top,
-    width: z.width,
-    height: z.height,
+    left: centerLeft,
+    top: first.top,
+    transform: 'translate(-50%, calc(-100% - 8px))',
   }
 }
 
@@ -479,22 +483,26 @@ onBeforeUnmount(() => {
             alt="Planta comercial Strip Center Lircay — Cugat, Cruz Verde, KFC, Papa John's y locales disponibles"
             class="w-full h-auto block"
           />
-          <!-- Zonas verdes: locales disponibles (07, 08, 10, 12, 13) -->
-          <div
-            v-for="loc in localesDisponibles"
-            :key="'zone-' + loc.id"
-            class="absolute rounded border-2 border-green-500 bg-green-500/25 hover:bg-green-500/40 hover:border-green-600 transition-all duration-200 cursor-pointer z-10"
-            :style="getLocalZoneStyle(loc.id)"
-            @mouseenter="hoverLocal = loc.id"
-            @mouseleave="hoverLocal = null"
-          >
+          <!-- Zonas verdes: locales disponibles; 11 y 12 tiene dos partes (L) -->
+          <template v-for="loc in localesDisponibles" :key="'loc-' + loc.id">
+            <!-- Un solo tooltip por local (al pasar por cualquier parte) -->
             <div
               v-if="hoverLocal === loc.id"
-              class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-[#1e3a8a] text-white text-sm font-semibold rounded-lg shadow-xl whitespace-nowrap z-20"
+              class="absolute z-20 pointer-events-none px-3 py-2 bg-[#1e3a8a] text-white text-sm font-semibold rounded-lg shadow-xl whitespace-nowrap"
+              :style="getLocalTooltipStyle(loc)"
             >
               Local {{ loc.id }} — {{ loc.m2 }} m² · Cotizar
             </div>
-          </div>
+            <div
+              v-for="(part, partIdx) in getLocalZoneParts(loc.id)"
+              :key="'zone-' + loc.id + '-' + partIdx"
+              class="absolute rounded border-2 border-green-500 bg-green-500/25 hover:bg-green-500/40 hover:border-green-600 transition-all duration-200 cursor-pointer z-10"
+              :style="part"
+              @mouseenter="hoverLocal = loc.id"
+              @mouseleave="hoverLocal = null"
+            >
+            </div>
+          </template>
         </div>
         <p class="text-center text-gray-500 text-sm mb-2">
           <span class="inline-block w-3 h-3 rounded-sm bg-green-500/40 border border-green-600 align-middle mr-1"></span>
@@ -531,7 +539,7 @@ onBeforeUnmount(() => {
               <template v-for="p in dronePuntos" :key="'drone-' + p.localId">
                 <button
                   type="button"
-                  class="absolute w-7 h-7 rounded-full bg-[#f37021] border-2 border-white shadow-lg cursor-pointer z-10 transform -translate-x-1/2 -translate-y-1/2 hover:scale-125 focus:scale-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021] focus-visible:ring-offset-2 transition-transform"
+                  class="absolute w-3 h-3 rounded-full bg-[#f37021] border border-white shadow cursor-pointer z-10 transform -translate-x-1/2 -translate-y-1/2 hover:scale-125 focus:scale-125 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021] focus-visible:ring-offset-1 transition-transform"
                   :style="{ left: p.left, top: p.top }"
                   @mouseenter="dronePuntoActivo = p.localId"
                   @mouseleave="dronePuntoActivo = null"
