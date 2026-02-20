@@ -51,40 +51,10 @@ function setPoloImagenError(nombre) {
 // Solo la tarjeta sobre la que está el cursor hace el flip (independiente por card)
 const poloHovered = ref(null)
 
-const whatsappNumber = '56912345678'
-const whatsappBase = `https://wa.me/${whatsappNumber}`
-
 const videoSrc = '/videos/drone.mp4'
 const videoError = ref(false)
 function onVideoError() {
   videoError.value = true
-}
-
-// Modal Cotizar
-const showCotizarModal = ref(false)
-const formCotizar = ref({
-  nombre: '',
-  email: '',
-  telefono: '',
-  local: '',
-  mensaje: '',
-})
-
-function openCotizarModal() {
-  showCotizarModal.value = true
-  if (typeof AOS !== 'undefined') AOS.refresh()
-}
-function closeCotizarModal() {
-  showCotizarModal.value = false
-}
-
-function enviarCotizacion() {
-  const f = formCotizar.value
-  const text = encodeURIComponent(
-    `Hola, me interesa cotizar un local en Strip Center Lircay.\nNombre: ${f.nombre}\nEmail: ${f.email}\nTel: ${f.telefono}\nLocal de interés: ${f.local || 'Por definir'}\nMensaje: ${f.mensaje || '-'}`
-  )
-  window.open(`${whatsappBase}?text=${text}`, '_blank')
-  closeCotizarModal()
 }
 
 // Planta comercial: hover tooltip
@@ -255,7 +225,6 @@ onBeforeUnmount(() => {
         <div class="hidden md:flex items-center gap-8">
           <a href="#ubicacion" class="text-sm font-medium transition-colors rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021] focus-visible:ring-offset-2" :class="navScrolled ? 'text-gray-600 hover:text-[#1e3a8a]' : 'text-white/90 hover:text-white'">Ubicación</a>
           <a href="#locales" class="text-sm font-medium transition-colors rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021] focus-visible:ring-offset-2" :class="navScrolled ? 'text-gray-600 hover:text-[#1e3a8a]' : 'text-white/90 hover:text-white'">Locales</a>
-          <button type="button" class="btn-primary text-sm py-2.5 px-5 rounded-xl" @click="openCotizarModal" aria-label="Abrir formulario de cotización">Cotizar</button>
         </div>
       </div>
     </nav>
@@ -338,40 +307,41 @@ onBeforeUnmount(() => {
             v-for="(polo, i) in poloGastronomico"
             :key="polo.nombre"
             class="group relative rounded-2xl overflow-hidden card-premium hover:-translate-y-1"
-            :class="{ 'polo-flip-active': poloHovered === polo.nombre }"
             data-aos="fade-up"
             :data-aos-delay="150 + i * 100"
             @mouseenter="poloHovered = polo.nombre"
             @mouseleave="poloHovered = null"
           >
-            <!-- Flip: al pasar el cursor el logo gira y se muestra la imagen del local -->
-            <div class="aspect-[4/3] overflow-hidden rounded-t-2xl polo-flip-wrap">
-              <div class="relative w-full h-full polo-flip-inner">
-                <!-- Cara frontal: logo (gira 180° y se oculta al hover) -->
-                <div class="polo-flip-front absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-br from-gray-100 to-gray-200">
-                  <img
-                    :src="polo.logo"
-                    :alt="polo.nombre"
-                    class="polo-logo-img max-h-24 md:max-h-32 w-auto object-contain"
-                  />
-                </div>
-                <!-- Cara trasera: imagen del local (visible al hover). Inner con translateZ evita que la imagen desaparezca al girar. -->
-                <div class="polo-flip-back absolute inset-0 bg-gray-100">
-                  <div class="polo-flip-back-inner absolute inset-0">
-                    <img
-                      v-show="!poloImagenError[polo.nombre]"
-                      :src="polo.imagen"
-                      :alt="polo.nombre + ' — vista del local'"
-                      class="absolute inset-0 w-full h-full object-cover"
-                      @error="setPoloImagenError(polo.nombre)"
-                    />
-                    <div
-                      v-show="poloImagenError[polo.nombre]"
-                      class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 text-sm p-4 text-center"
-                    >
-                      <span>Coloque <strong>{{ polo.nombre === 'KFC' ? 'kfc.jpg' : 'papajohns.jpg' }}</strong> en <code class="bg-gray-300 px-1 rounded text-xs">public/images/polo/</code></span>
-                    </div>
-                  </div>
+            <!-- Hover: se muestra logo o imagen con v-show (sin opacidad para que no desaparezca) -->
+            <div class="aspect-[4/3] overflow-hidden rounded-t-2xl relative bg-gray-100">
+              <!-- Logo: visible cuando no hay hover en esta tarjeta -->
+              <div
+                v-show="poloHovered !== polo.nombre"
+                class="absolute inset-0 flex items-center justify-center p-8 bg-gradient-to-br from-gray-100 to-gray-200"
+              >
+                <img
+                  :src="polo.logo"
+                  :alt="polo.nombre"
+                  class="max-h-24 md:max-h-32 w-auto object-contain"
+                />
+              </div>
+              <!-- Imagen: visible solo cuando hay hover en esta tarjeta -->
+              <div
+                v-show="poloHovered === polo.nombre"
+                class="absolute inset-0 bg-gray-100"
+              >
+                <img
+                  v-if="!poloImagenError[polo.nombre]"
+                  :src="polo.imagen"
+                  :alt="polo.nombre + ' — vista del local'"
+                  class="w-full h-full object-cover block"
+                  @error="setPoloImagenError(polo.nombre)"
+                />
+                <div
+                  v-else
+                  class="absolute inset-0 flex flex-col items-center justify-center text-gray-500 text-sm p-4 text-center"
+                >
+                  <span>Coloque <strong>{{ polo.nombre === 'KFC' ? 'kfc.jpg' : 'papajohns.jpg' }}</strong> en <code class="bg-gray-300 px-1 rounded text-xs">public/images/polo/</code></span>
                 </div>
               </div>
             </div>
@@ -491,7 +461,7 @@ onBeforeUnmount(() => {
               class="absolute z-20 pointer-events-none px-3 py-2 bg-[#1e3a8a] text-white text-sm font-semibold rounded-lg shadow-xl whitespace-nowrap"
               :style="getLocalTooltipStyle(loc)"
             >
-              Local {{ loc.id }} — {{ loc.m2 }} m² · Cotizar
+              Local {{ loc.id }} — {{ loc.m2 }} m²
             </div>
             <div
               v-for="(part, partIdx) in getLocalZoneParts(loc.id)"
@@ -669,7 +639,7 @@ onBeforeUnmount(() => {
         </h2>
         <span class="section-title-accent" data-aos="fade-up"></span>
         <p class="section-subtitle mb-10 mt-6" data-aos="fade-up" data-aos-delay="100">
-          Consulta disponibilidad y condiciones. Cotiza sin compromiso.
+          Locales disponibles con superficies indicadas.
         </p>
         <ul class="space-y-4">
           <li
@@ -683,15 +653,6 @@ onBeforeUnmount(() => {
               <span class="font-heading text-xl md:text-2xl font-bold text-[#1e3a8a]">Local {{ loc.id }}</span>
               <span class="text-gray-600 font-medium">{{ loc.m2 }} m²</span>
             </div>
-            <a
-              :href="`${whatsappBase}?text=${encodeURIComponent('Hola, me interesa cotizar el Local ' + loc.id + ' (' + loc.m2 + ' m²) en Strip Center Lircay.')}`"
-              target="_blank"
-              rel="noopener"
-              class="btn-primary shrink-0"
-              :aria-label="'Cotizar Local ' + loc.id"
-            >
-              Cotizar
-            </a>
           </li>
         </ul>
       </div>
@@ -716,92 +677,8 @@ onBeforeUnmount(() => {
       <div class="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col md:flex-row items-center justify-between gap-6">
         <p class="font-heading text-sm font-semibold text-white/95">Strip Center Lircay</p>
         <p class="text-sm text-white/70 text-center md:text-left">Oportunidad de inversión comercial en Talca.</p>
-        <a :href="`${whatsappBase}?text=${encodeURIComponent('Hola, me interesa información sobre Strip Center Lircay.')}`" target="_blank" rel="noopener" class="btn-primary text-sm py-2.5 px-5 shrink-0">
-          Contactar por WhatsApp
-        </a>
       </div>
     </footer>
-
-    <!-- CTA Flotante -->
-    <button
-      type="button"
-      class="fixed bottom-6 right-6 z-50 px-5 py-4 bg-[#f37021] text-white font-bold rounded-full shadow-lg hover:bg-[#e06518] hover:shadow-xl hover:scale-105 active:scale-100 transition-all duration-200 text-sm md:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-[#f37021] focus-visible:ring-offset-2"
-      style="margin-bottom: env(safe-area-inset-bottom, 0); margin-right: env(safe-area-inset-right, 0);"
-      @click="openCotizarModal"
-      aria-label="Cotizar local ahora"
-    >
-      Cotizar Local Ahora
-    </button>
-
-    <!-- Modal formulario Cotizar -->
-    <Teleport to="body">
-      <Transition name="modal">
-        <div
-          v-if="showCotizarModal"
-          class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/55 backdrop-blur-sm"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-cotizar-title"
-          @click.self="closeCotizarModal"
-        >
-          <div class="bg-white rounded-3xl shadow-2xl max-w-md w-full p-6 md:p-8 border border-gray-100" @click.stop>
-            <h3 id="modal-cotizar-title" class="font-heading text-xl font-bold text-[#1e3a8a] mb-6">Solicitar cotización</h3>
-            <form @submit.prevent="enviarCotizacion" class="space-y-4">
-              <input
-                v-model="formCotizar.nombre"
-                type="text"
-                placeholder="Nombre"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#f37021] focus:border-[#f37021] outline-none transition-shadow"
-                required
-              />
-              <input
-                v-model="formCotizar.email"
-                type="email"
-                placeholder="Email"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#f37021] focus:border-[#f37021] outline-none transition-shadow"
-                required
-              />
-              <input
-                v-model="formCotizar.telefono"
-                type="tel"
-                placeholder="Teléfono"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#f37021] focus:border-[#f37021] outline-none transition-shadow"
-              />
-              <select
-                v-model="formCotizar.local"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#f37021] focus:border-[#f37021] outline-none bg-white transition-shadow"
-              >
-                <option value="">Local de interés</option>
-                <option v-for="loc in localesDisponibles" :key="loc.id" :value="'Local ' + loc.id + ' (' + loc.m2 + ' m²)'">
-                  Local {{ loc.id }} ({{ loc.m2 }} m²)
-                </option>
-              </select>
-              <textarea
-                v-model="formCotizar.mensaje"
-                placeholder="Mensaje (opcional)"
-                rows="3"
-                class="w-full px-4 py-3 rounded-xl border border-gray-200 focus:ring-2 focus:ring-[#f37021] focus:border-[#f37021] outline-none resize-none transition-shadow"
-              ></textarea>
-              <div class="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  class="flex-1 py-3 rounded-xl border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-gray-400"
-                  @click="closeCotizarModal"
-                >
-                  Cerrar
-                </button>
-                <button
-                  type="submit"
-                  class="flex-1 py-3 rounded-xl btn-primary"
-                >
-                  Enviar por WhatsApp
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </Transition>
-    </Teleport>
     </div>
   </div>
 </template>
@@ -816,23 +693,6 @@ onBeforeUnmount(() => {
   0% { transform: translateX(0); }
   100% { transform: translateX(-50%); }
 }
-.modal-enter-active,
-.modal-leave-active {
-  transition: opacity 0.25s ease;
-}
-.modal-enter-from,
-.modal-leave-to {
-  opacity: 0;
-}
-.modal-enter-active .bg-white,
-.modal-leave-active .bg-white {
-  transition: transform 0.25s ease;
-}
-.modal-enter-from .bg-white,
-.modal-leave-to .bg-white {
-  transform: scale(0.95);
-}
-
 /* Marcador y etiqueta Strip Center en el mapa */
 :deep(.strip-center-tooltip) {
   background: #1e3a8a !important;
